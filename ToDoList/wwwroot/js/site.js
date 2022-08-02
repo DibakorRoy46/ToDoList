@@ -17,7 +17,6 @@ $(() => {
         }).done(function (response) {
             $("#table-container").html(response);
         }).fail(function (xhr) {
-
             /*toastr.error("Something went wrong");*/
         })
     }
