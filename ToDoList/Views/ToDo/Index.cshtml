@@ -1,0 +1,81 @@
+﻿
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<div class="container" id="main-container">
+    <span id="messageBox" class="d-none">@TempData["message"]</span>
+    <h2 class="text-primary text-center border-bottom">Days</h2>
+    <div class="row pt-4">
+        <div class="col-6">
+            <div class="input-group">
+                <input class="form-control" placeholder="Search..." id="search" />
+                <div class="input-group-prepend">
+                    <div class="input-group-text"><i class="fas fa-search"></i></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-3">
+            <input class="btn btn-primary form-control" type="submit" value="Reset" id="resetBtn" />
+        </div>
+        <div class="col-3">
+            <a class="btn btn-success form-control" asp-action="Upsert"><i class="fas fa-plus"></i> Create New</a>
+        </div>
+        <div id="table-container" class="col-12">
+
+        </div>
+    </div>
+</div>
+
+@section Scripts{
+
+    <script>
+
+        $(document).ready(function () {
+            getData();
+        });
+        function getData() {
+            $.ajax({
+                url: '@Url.Action("ToDoTable", "ToDo")',
+                type: "GET"
+            }).done(function (response) {
+             
+                $("#table-container").html(response);
+            }).fail(function (xhr) {
+            
+                //toastr.error("Something went wrong");
+            })
+        }
+
+
+        $("#search").keyup(function () {
+            var searchValue = $("#search").val();
+            $.ajax({
+                url: '@Url.Action("ToDoTable", "ToDo")',
+                type: "GET",
+                data: {
+                    searchValue: searchValue
+                }
+            }).done(function (response) {
+        
+                $("#table-container").html(response);
+            }).fail(function (xhr) {
+
+                //toastr.error("Something went error");
+            })
+        });
+
+        var messageText = $("#messageBox").text();
+        if (messageText != "") {
+            toastr.success(messageText);
+            $("#messageBox").text('');
+        }
+        
+
+        $("#resetBtn").click(function () {
+            
+            $("#search").val('');
+            getData();
+            
+        });
+    </script>
+}

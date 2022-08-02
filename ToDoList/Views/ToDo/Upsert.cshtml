@@ -1,0 +1,99 @@
+﻿@model ToDoList.Models.Models.ToDo
+@{
+    var title = "Create ToDo";
+    ViewData["Title"] = "Upsert";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container" id="main-container">
+    <form method="post" enctype="multipart/form-data">
+        <div class="row">
+            <div class="col-12">
+                @if (!Model.Id.Equals(Guid.Empty))
+                {
+                    title = "Edit To Do";
+                    <input asp-for="Id" hidden />
+                }
+                <h3 class="text-primary">@title</h3>
+            </div>          
+         
+            <div class="col-md-10 col-lg-8 col-sm-12  pt-4">
+                <div class="row form-group my-3">
+                    <div class="col-3">
+                        <label>Day Name</label>
+                    </div>
+                    <div class="col-8">
+                        <input class="form-control" asp-for="ToDoDetails" id="name" autocomplete="off" />
+                        <span asp-validation-for="ToDoDetails" class="text-danger"></span>
+                        <label id="name-span" class="text-danger"></label>
+                    </div>
+                    <div class="col-8">
+                        <input class="form-control" asp-for="Status" id="status" autocomplete="off" />
+                        <span asp-validation-for="Status" class="text-danger"></span>
+                        <label id="name-span" class="text-danger"></label>
+                    </div>
+                </div>
+               
+
+                <div class="row form-group offset-3 my-3">
+                    <div class="col-6">
+                        @if (!Model.Id.Equals(Guid.Empty))
+                        {
+                            <input type="submit" value="Update" id="submitBtn" class="form-control btn btn-success" />
+                        }
+                        else
+                        {
+                            <input type="submit" value="Submit" id="submitBtn" class="form-control btn btn-success" />
+                        }
+                    </div>
+                    <div class="col-6">
+                        <a class="form-control btn btn-primary" asp-action="Index"><i class="fas fa-arrow-left"></i> Back to List</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts{ 
+    <partial name="_ValidationScriptsPartial"/>   
+    @*<script>
+        
+        $(document).ready(function () {
+          
+            $("#name").keyup(function () {
+                
+                var name = $("#name").val();
+                $.ajax({
+                    url: '@Url.Action("ExistsName", "ToDo")',
+                    type: "GET",
+                    data: {
+                        name: name
+                    },
+                    success: function (data) {
+                        if (data.success == true) {
+                            if (alphabaticString.test(name)) {
+                                $("#name-span").text("Semester Name Available");
+                                $("#name-span").removeClass("text-danger");
+                                $("#name-span").addClass("text-success");
+                                $("#submitBtn").attr("disabled", false);
+                            }
+                            else {
+                                $("#name-span").text("Semester Name Must be Alphabetical");
+                                $("#name-span").removeClass("text-success");
+                                $("#name-span").addClass("text-danger");
+                                $("#submitBtn").attr("disabled", true);
+                            }
+                        }
+                        else{
+                            $("#name-span").text("Semester Name is not Available");
+                            $("#name-span").removeClass("text-success");
+                            $("#name-span").addClass("text-danger");
+                            $("#submitBtn").attr("disabled", true);
+                        }                     
+                    }
+                })
+            });          
+        });
+    </script>*@
+}
