@@ -15,6 +15,5 @@ namespace ToDoList.Models.Models
         [Required]
         public string ToDoDetails { get; set; }
         public bool Status { get; set; }
-
     }
 }

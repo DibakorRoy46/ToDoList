@@ -11,5 +11,6 @@ namespace ToDoList.DataAccess.Data
         {
         }
         public DbSet<ToDo> ToDo { get; set; }
+        public DbSet<ApplicationUser> ApplicationUsers { get; set; }
     }
 }

@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using System.Diagnostics;
 using ToDoList.DataAccess.IRepository;
 using ToDoList.Models.Models;
@@ -6,13 +8,16 @@ using ToDoList.Models.ViewModels;
 using ToDoList.Utility;
 
 namespace ToDoList.Controllers
-{ 
+{
+    [Authorize]
     public class ToDoController : Controller
     {
         private readonly IUnitOfWork _unitOfWrok;
-        public ToDoController(IUnitOfWork unitOfWork)
+        private readonly IHubContext<SignalRServer> _signalHub;
+        public ToDoController(IUnitOfWork unitOfWork, IHubContext<SignalRServer> signalHub)
         {
             _unitOfWrok = unitOfWork;
+            _signalHub = signalHub;
         }
         #region Index
         [Route("")]
@@ -36,6 +41,7 @@ namespace ToDoList.Controllers
         }
         #endregion
         #region Upsert
+        [Authorize(Roles ="Admin")]
         [Route("ToDo/Upsert")]
         public async Task<IActionResult> Upsert(Guid id)
         {
@@ -63,6 +69,7 @@ namespace ToDoList.Controllers
         }
         [HttpPost]
         [Route("ToDo/Upsert")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Upsert(ToDo toDo)
         {
             try
@@ -80,6 +87,7 @@ namespace ToDoList.Controllers
                         TempData["message"] = "Successfully Updated";
                     }
                     await _unitOfWrok.SaveAsync();
+                    await _signalHub.Clients.All.SendAsync("LoadToDo");
                     return RedirectToAction(nameof(Index));
                 }
                 return View(toDo);
@@ -93,6 +101,7 @@ namespace ToDoList.Controllers
         #endregion
         #region Delete
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(Guid id)
         {
             try
@@ -106,6 +115,7 @@ namespace ToDoList.Controllers
                     }
                     await _unitOfWrok.ToDo.RemoveAsync(toDoObj);
                     await _unitOfWrok.SaveAsync();
+                    await _signalHub.Clients.All.SendAsync("LoadToDo");
                     int pageNo = 1;
                     int pageSize = 10;
                     var numberOfToDo = await _unitOfWrok.ToDo.CountAsync(null);
@@ -126,31 +136,9 @@ namespace ToDoList.Controllers
             }
         }
         #endregion
-        #region Exists
-        public async Task<IActionResult> ExistsName(string name)
-        {
-            try
-            {
-                if (!String.IsNullOrEmpty(name))
-                {
-                    var exist = await _unitOfWrok.ToDo.Exists(x => x.ToDoDetails.ToLower().Equals(name.ToLower()));
-                    if (exist == true)
-                    {
-                        return Json(new { success = false });
-                    }
-                    return Json(new { success = true });
-                }
-                return Json(new { success = false });
-            }
-
-            catch (Exception ex)
-            {
-                return NotFound();
-            }
-        }
-        #endregion
 
         #region ToDoDone
+
         public async Task<IActionResult> ToDoDone(Guid id, int pageNo, string searchValue)
         {
             try
@@ -166,9 +154,16 @@ namespace ToDoList.Controllers
                     {
                         toDo.Status = true;
                         await _unitOfWrok.SaveAsync();
-                        return Json(new { message = "Successfully Done" });
+                        await _signalHub.Clients.All.SendAsync("LoadToDo");
+                        return Json(new {success=true, message = "Successfully Done" });
                     }
-                    return Json(new { message = "Already Done" });
+                    else {
+                        toDo.Status = false;
+                        await _unitOfWrok.SaveAsync();
+                        await _signalHub.Clients.All.SendAsync("LoadToDo");
+                        return Json(new { success = false, message = "Undo" });
+                    }
+                    
 
                 }
                 else

@@ -1,0 +1,66 @@
+﻿@model ToDoList.Models.ViewModels.UserUpdateVM
+@{
+   
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<span id="message" class="d-none">@TempData["UserUpdate"]</span>
+<div class="container" id="main-container">
+    <form method="post" enctype="multipart/form-data">
+        <div class="row">
+            <div class="col-12">
+                <input asp-for="ApplicationUser.Id" hidden />
+                <h3 class="text-primary text-center border-bottom">Edit User Profile</h3>
+            </div>
+
+            <div class="col-md-12 col-lg-6 col-sm-12  pt-4">
+                <div class="row form-group my-3">
+                    <div class="col-3">
+                        <label>Name</label>
+                    </div>
+                    <div class="col-8">
+                        <input class="form-control" asp-for="ApplicationUser.Name" id="name" autocomplete="off" />
+                        <span asp-validation-for="ApplicationUser.Name" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="row form-group my-3">
+                    <div class="col-3">
+                        <label>Phone Number</label>
+                    </div>
+                    <div class="col-8">
+                        <input class="form-control" asp-for="ApplicationUser.PhoneNumber" id="name" autocomplete="off" />
+                        <span asp-validation-for="ApplicationUser.PhoneNumber" class="text-danger"></span>
+                    </div>
+                </div>
+                
+            </div>
+          
+
+        </div>
+        <div class="row">
+            <div class="col-sm-2 col-md-6 col-sm-12 my-2">
+                @if (!Model.ApplicationUser.Id.Equals(Guid.Empty))
+                {
+                    <input type="submit" value="Update" id="submitBtn" class="form-control btn btn-success" />
+                }
+                else
+                {
+                    <input type="submit" value="Submit" id="submitBtn" class="form-control btn btn-success" />
+                }
+            </div>
+            <div class="col-sm-2 col-md-6 col-sm-12 my-2">
+                <a class="form-control btn btn-primary" asp-action="Index" asp-controller="User" asp-area="Admin"><i class="fas fa-arrow-left"></i> Back</a>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts{
+    <partial name="_ValidationScriptsPartial" />
+<script>
+ 
+    var message = $("#message").text();
+    if (message != "") {
+        toastr.success(message);
+    }
+</script>
+}

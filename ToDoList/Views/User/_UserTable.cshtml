@@ -1,0 +1,185 @@
+﻿@model ToDoList.Models.ViewModels.UserVM
+@using Microsoft.AspNetCore.Identity
+<div class="table-responsive table-bordered">
+    <table class="table table-hover">
+        <thead class="table-secondary ">
+            <tr class="table-head">
+                <th>#</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>              
+                <th>Activity</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody class="table-body">
+            @if (Model.UserList.Count() > 0)
+            {
+                var i = 0;
+                var isStudent = false;
+                var isFaculty = false;
+                foreach (var user in Model.UserList)
+                {
+                    i++;
+
+                    <tr>
+                        <td>@i</td>
+
+                        <td>@user.Name</td>
+                        <td>@user.Email</td>
+                        
+                        <td>
+                            @foreach (var role in user.Role)
+                            {
+                                
+                                <p>@role,</p>
+                                if(role=="Student")
+                                {
+                                    isStudent = true;
+
+                                }
+                                if(role=="Faculty")
+                                {
+                                    isFaculty = true;
+                                }
+
+                            }
+                        </td>
+                        <td>
+                            @if (user.LockoutEnd == null || user.LockoutEnd <= DateTime.Now.AddHours(6))
+                            {
+                                <button class="btn btn-primary activity" data-id="@user.Id"> <i class="fas fa-thumbs-up text-white"></i> &nbsp; Unlock</button>
+                            }
+                            else
+                            {
+                                <button class="btn btn-danger activity" data-id="@user.Id"> <i class="fas fa-thumbs-down">&nbsp; Lock</i></button>
+                            }
+                        </td>
+                        <td>
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <a class="btn btn-success" data-bs-toggle="tooltip" data-bs-placement="top" title="Roles" asp-action="ManageRole" asp-route-Id="@user.Id">Roles</a>
+                               
+                            }
+
+                                                    
+                            <a class="btn btn-primary" data-bs-toggle="tooltip" data-bs-placement="top" title="Edit" asp-action="Edit" asp-route-Id="@user.Id"><i class="fas fa-edit"></i></a>
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <button class="btn btn-danger deleteBtn" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete" data-id="@user.Id"><i class="fas fa-trash-alt"></i></button>
+                            }
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td></td>
+                    <td></td>             
+                    <td class="text-danger">No User  Available</td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<div class="text-center col-12">
+    @if (Model.Pager != null && Model.Pager.TotalPages > 1)
+    {
+        @if (Model.Pager.CurrentPage > 1)
+        {
+            <button class="btn btn-outline-info page-buttons" data-pageNo="1">First</button>
+            <button class="btn btn-outline-info page-buttons" data-pageNo="@(Model.Pager.CurrentPage+1)">Next</button>
+        }
+        for (int page = Model.Pager.StartPage; page <= Model.Pager.EndPage; page++)
+        {
+            string activeClass = Model.Pager.CurrentPage == page ? "active bg-info" : "";
+            <button class="btn btn-outline-info page-buttons @activeClass" data-pageNo="@(page)">@(page)</button>
+        }
+        if (Model.Pager.CurrentPage < Model.Pager.EndPage)
+        {
+            <button class="btn btn-outline-info page-buttons" data-pageNo="@(Model.Pager.CurrentPage+1)">Next</button>
+            <button class="btn btn-outline-info page-buttons" data-pageNo="@(Model.Pager.EndPage)">Last</button>
+        }
+    }
+</div>
+
+<script>
+    $(document).ready(function () {
+
+        $(".deleteBtn").click(function () {
+            swal({
+                title: "Are you sure that you want to delete this data",
+                text: "If you once delete this you can not restore it!",
+                icon: "warning",
+                dangerMode: true,
+                buttons: true
+            }).then((willDelete) => {
+                if (willDelete) {
+                    $.ajax({
+                        url: '@Url.Action("Delete", "User")',
+                        type: "POST",
+                        data: {
+                            id: $(this).attr("data-id"),
+                            searchValue: '@Model.Search',
+                            roleId: '@Model.Role',
+                            pageNo: '@Model.Pager.CurrentPage'
+                        }
+                    }).done(function (response) {
+
+                        swal("Successfully Deleted", {
+                            icon: "success"
+                        });
+                     
+                        $("#table-container").html(response);
+                    }).fail(function (xhr) {
+                  
+                        toastr.error("Something went wrong");
+                    })
+                }
+            })
+        });
+
+        $(".page-buttons").click(function () {
+            $.ajax({
+                url: '@Url.Action("UserTable", "User")',
+                data: {
+                    pageNo: $(this).attr("data-pageNo"),
+                    searchValue: '@Model.Search',
+                    roleId: '@Model.Role'
+                }
+            }).done(function (response) {
+        
+                $("#table-container").html(response);
+            }).fail(function (xhr) {
+            
+                toastr.error("Something Went Wrong");
+            })
+        });
+
+        $(".activity").click(function () {
+            $.ajax({
+                url: '@Url.Action("LockUnLock", "User")',
+                type: "POST",
+                data: {
+                    id: $(this).attr("data-id"),
+                    pageNo: '@Model.Pager.CurrentPage',
+                    searchValue: '@Model.Search',
+                    roleId: '@Model.Role'
+                }
+            }).done(function (response) {
+          
+                $("#table-container").html(response);
+                toastr.success("Successfully Executed");
+            }).fail(function (xhr) {
+           
+                toastr.error("Something went wrong");
+            })
+        });
+    });
+
+
+</script>

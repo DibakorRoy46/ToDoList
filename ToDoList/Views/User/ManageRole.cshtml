@@ -1,0 +1,97 @@
+﻿
+@model ToDoList.Models.ViewModels.ManageRoleVM
+    <div class="container" id="main-container">
+        <h2 class="text-center text-primary">Assign Role to User</h2>
+        <div class="row mt-5 pt-5">
+            <div class="col-lg-6 col-sm-12">             
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <input type="hidden" asp-for="User.Id" id="userId" />
+                    <input type="hidden" asp-for="UserRole.UserId" />
+                    <div class="row form-group my-4" >
+                        <div class="col-4">
+                            <label asp-for="User.Name"></label>
+                        </div>
+                        <div class="col-8">
+                            <input type="text" asp-for="User.Name" class="form-control" disabled />
+                        </div>
+                    </div>
+                    <div class="row form-group my-4">
+                        <div class="col-4 mt-3">
+                            <label asp-for="UserRole.RoleId"></label>
+                        </div>
+                        <div class="col-8">
+                            <select class="form-control" id="roleId" asp-items="@Model.RoleList">
+                                <option value="" selected disabled>---Select Role---</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row form-group my-4">
+                        <div class="col-4 offset-4">
+                            <button type="submit" id="submitBtn" class="btn btn-primary form-control">Add Role</button>
+                        </div>
+                        <div class="col-4">
+                            <a asp-action="Index" class="btn btn-success form-control">Back to List</a>
+                        </div>
+                    </div>
+               
+            </div>
+            <div class="col-lg-6 col-sm-12 " id="roleList">
+
+            </div>
+        </div>
+    </div>
+    @section Scripts{
+        <partial name="_ValidationScriptsPartial" />
+
+        <script>
+        $(document).ready(function () {
+            getData();
+        });
+            var userId = $("#userId").val();
+            var roleId = $("#roleId").val();
+        function getData() {
+
+            $.ajax({
+                    url: '@Url.Action("ManageRolePartial", "User")',
+                    type: "GET",
+                    data: {
+                             id: userId
+                         }
+                    }).done(function (response) {
+                          
+                            $("#roleList").html(response);
+                    }).fail(function (xhr) {
+                  
+                        toastr.error("Something Went Wrong");
+                    })
+        }
+
+
+            $("#submitBtn").click(function () {
+               var userId = $("#userId").val();
+                var roleId = $('#roleId').val();
+                console.log(roleId);
+                if (roleId != null) {
+                    $.ajax({
+                        url: '@Url.Action("ManageRole", "User")',
+                        type: "POST",
+                        data: {
+                            userId: userId,
+                            roleId: roleId
+                        }
+                    }).done(function (response) {
+                       
+                        $("#roleList").html(response);
+                    }).fail(function (xhr) {
+               
+                        toastr.error("Role Already in Assigned");
+                    })
+                }
+            else {
+             
+                toastr.error(" Select Any Role ");
+            }
+        });
+
+        </script>
+    }

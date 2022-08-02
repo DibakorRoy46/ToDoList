@@ -4,7 +4,7 @@
 }
 <div class="container" id="main-container">
     <span id="messageBox" class="d-none">@TempData["message"]</span>
-    <h2 class="text-primary text-center border-bottom">To Do List</h2>
+    <h2 class="text-primary text-center border-bottom">Roles</h2>
     <div class="row pt-4">
         <div class="col-6">
             <div class="input-group">
@@ -35,13 +35,13 @@
         });
         function getData() {
             $.ajax({
-                url: '@Url.Action("ToDoTable", "ToDo")',
+                url: '@Url.Action("RoleTable", "Role")',
                 type: "GET"
             }).done(function (response) {
-             
+        
                 $("#table-container").html(response);
             }).fail(function (xhr) {
-            
+             
                 toastr.error("Something went wrong");
             })
         }
@@ -50,16 +50,16 @@
         $("#search").keyup(function () {
             var searchValue = $("#search").val();
             $.ajax({
-                url: '@Url.Action("ToDoTable", "ToDo")',
+                url: '@Url.Action("RoleTable", "Role")',
                 type: "GET",
                 data: {
                     searchValue: searchValue
                 }
             }).done(function (response) {
-        
+              
                 $("#table-container").html(response);
             }).fail(function (xhr) {
-
+            
                 toastr.error("Something went error");
             })
         });
@@ -72,10 +72,25 @@
         
 
         $("#resetBtn").click(function () {
-            
+            var searchValue = $("#search").val();
             $("#search").val('');
-            getData();
+            if (searchValue != "") {
+                $.ajax({
+                    url: '@Url.Action("RoleTable", "Role")',
+                    type: "GET"
+                }).done(function (response) {
+                   
+                    $("#table-container").html(response);
+                }).fail(function (xhr) {
+                 
+                    toastr.error("Something went error");
+                })
+            }
+            else {
             
+                toastr.error("Nothing to Reset");
+            }
+
         });
     </script>
 }

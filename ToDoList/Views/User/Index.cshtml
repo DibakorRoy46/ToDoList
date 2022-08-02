@@ -1,0 +1,118 @@
+﻿
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid" id="main-container">
+    <span id="messageBox" class="d-none">@TempData["success"]</span>
+    <h2 class="text-primary text-center border-bottom">Users</h2>
+    <div class="row pt-4">
+        <div class="col-6">
+            <div class="input-group">
+                <input class="form-control" placeholder="Search..." id="search" />
+                <div class="input-group-prepend">
+                    <div class="input-group-text"><i class="fas fa-search"></i></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6">
+            <select class="form-control" id="roleId">
+                <option selected disabled value="">----Select Role----</option>
+                @foreach (var role in ViewBag.RoleList)
+                {
+                    <option value="@role.Id">@role.Name</option>
+                }
+            </select>
+        </div>
+        <div class="col-4">
+            <input class="btn btn-info form-control" type="submit" value="Search" id="searchBtn" />
+        </div>
+        <div class="col-4">
+            <input class="btn btn-primary form-control" type="submit"  value="Reset" id="resetBtn" />
+        </div>
+        <div class="col-4">
+            <a class="btn btn-success form-control" asp-action="Register" asp-controller="Account"><i class="fas fa-plus"></i> Create New User</a>
+        </div>
+        <div id="table-container" class="col-lg-12 col-md-12 col-sm-12 mb-5">
+
+        </div>
+    </div>
+</div>
+
+@section Scripts{
+
+    <script>
+        $(document).ready(function () {
+            getData();
+        });
+        function getData() {
+            $.ajax({
+                url: '@Url.Action("UserTable", "User")',
+                type: "GET"
+            }).done(function (response) {
+              
+                $("#table-container").html(response);
+            }).fail(function (xhr) {
+             
+                toastr.error("Something went wrong");
+            })
+        }
+        $("#searchBtn").click(function () {
+            var searchValue = $("#search").val();
+            var roleId = $("#roleId").val();
+
+            if (searchValue != "" || roleId != null) {
+                $.ajax({
+                    url: '@Url.Action("UserTable", "User")',
+                    type: "GET",
+                    data: {
+                        searchValue: searchValue,
+                        roleId: roleId
+                    }
+                }).done(function (response) {
+              
+                    $("#table-container").html(response);
+                }).fail(function (xhr) {
+                  
+                    toastr.error("Something went error");
+                })
+            }
+            else {
+            
+                toastr.error("Nothing to Search");
+            }
+
+        });
+
+        var messageText = $("#messageBox").text();
+        if (messageText != "") {
+            toastr.success(messageText);
+            $("#messageBox").text('');
+        }
+
+        $("#resetBtn").click(function () {         
+            var searchValue = $("#search").val();
+            var roleId = $("#roleId").val();
+            $("#search").val('');
+            $("#roleId").val('');
+            
+            if (searchValue != "" || roleId != null) {
+                $.ajax({
+                    url: '@Url.Action("UserTable", "User")',
+                    type: "GET"
+                }).done(function (response) {
+                  
+                    $("#table-container").html(response);
+                }).fail(function (xhr) {
+                  
+                    toastr.error("Something went error");
+                })
+            }
+            else {
+                            
+                toastr.error("Nothing to Reset");
+            }
+        });
+    </script>
+}

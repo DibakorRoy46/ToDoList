@@ -1,13 +1,15 @@
 ﻿@model ToDoList.Models.ViewModels.ToDoVM
-
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<IdentityUser> SignInManager
+@inject UserManager<IdentityUser> UserManager
 <div class="table-responsive ">
     <table class="table table-hover table-bordered">
         <thead class="table-secondary">
             <tr>
-                <th>Sl</th>
-                <th>Details</th>
-                <th>Status</th>
-                <th>Actions</th>
+                <th width="10">Sl</th>
+                <th width="40">Details</th>
+                <th width="10">Status</th>
+                <th width="40">Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -18,26 +20,50 @@
                 {
                     i++;
 
-                    <tr>
-                        <td>@(i)</td>
-                        <td>@toDo.ToDoDetails</td>
-                        <td>@toDo.Status</td>
-                        
+                            <tr>
+                                <td width="10">@(i)</td>
+                                <td width="40">
+                            @if (toDo.Status == true)
+                            {
+                                            <p class="text-primary">@toDo.ToDoDetails</p>
+                            }
+                            else
+                            {
+                                             <p class="text-danger">@toDo.ToDoDetails</p>
+                            }
 
-                        <td>
-                            <a class="btn btn-primary" asp-action="Upsert" asp-route-id="@toDo.Id"><i class="fas fa-edit"></i></a>
-                            <button class="btn btn-danger deleteBtn" data-id="@toDo.Id"><i class="fas fa-trash-alt"></i></button>
-                        </td>
-                    </tr>
+
+                                <td width="10">@if (toDo.Status == true)
+                                {
+                                            <input type="checkbox" checked disabled class="form-check-input">
+                                }
+                                else
+                                {
+                                            <input type="checkbox"  disabled class="form-check-input">
+                                }
+                                </td>
+
+                                <td width="40">
+                                    <button class="btn btn-success doneBtn" data-id="@toDo.Id"><i class="fa fa-check"></i></button>
+                                @if (User.IsInRole("Admin"))
+                                {
+
+
+                                            <a class="btn btn-primary" asp-action="Upsert" asp-route-id="@toDo.Id"><i class="fas fa-edit"></i></a>
+
+                                        <button class="btn btn-danger deleteBtn" data-id="@toDo.Id"><i class="fas fa-trash-alt"></i></button>
+                                }
+                                </td>
+                            </tr>
                 }
             }
             else
             {
-                <tr>
-                    <td></td>
-                    <td class="text-danger">No ToDo Available</td>
-                    <td></td>
-                </tr>
+                    <tr>
+                        <td></td>
+                        <td class="text-danger">No ToDo Available</td>
+                        <td></td>
+                    </tr>
             }
         </tbody>
     </table>
@@ -48,18 +74,18 @@
     {
         @if (Model.Pager.CurrentPage > 1)
         {
-            <button class="btn btn-outline-info page-buttons" data-pageNo="1">First</button>
-            <button class="btn btn-outline-info page-buttons" data-pageNo="@(Model.Pager.CurrentPage-1)">Previous</button>
+                    <button class="btn btn-outline-info page-buttons" data-pageNo="1">First</button>
+                    <button class="btn btn-outline-info page-buttons" data-pageNo="@(Model.Pager.CurrentPage-1)">Previous</button>
         }
         for (int page = Model.Pager.StartPage; page <= Model.Pager.EndPage; page++)
         {
             string activeClass = Model.Pager.CurrentPage == page ? "active bg-info" : "";
-            <button class="btn btn-outline-info page-buttons @activeClass" data-pageNo="@(page)">@(page)</button>
+                    <button class="btn btn-outline-info page-buttons @activeClass" data-pageNo="@(page)">@(page)</button>
         }
         if (Model.Pager.CurrentPage < Model.Pager.EndPage)
         {
-            <button class="btn btn-outline-info page-buttons" data-pageNo="@(Model.Pager.CurrentPage+1)">Next</button>
-            <button class="btn btn-outline-info page-buttons" data-pageNo="@(Model.Pager.EndPage)">Last</button>
+                    <button class="btn btn-outline-info page-buttons" data-pageNo="@(Model.Pager.CurrentPage+1)">Next</button>
+                    <button class="btn btn-outline-info page-buttons" data-pageNo="@(Model.Pager.EndPage)">Last</button>
         }
     }
 </div>
@@ -67,6 +93,41 @@
 <script>
     $(document).ready(function () {
 
+        $(".doneBtn").click(function () {
+            swal({
+                title: "Are You Sure to Make it Done",
+                icon: "success",
+                dangerMode: true,
+                buttons: true
+            }).then((willDelete) => {
+                if (willDelete) {
+                    $.ajax({
+                        url: '@Url.Action("ToDoDone", "ToDo")',
+                        type: "POST",
+                        data: {
+                            id: $(this).attr("data-id")
+                        }
+                    }).done(function (response) {
+                        if(response.success==true)
+                        {
+                             swal(response.message, {
+                                icon: "success"
+                            });
+                        }
+                        else{
+                            swal(response.message, {
+                                icon: "success"
+                            });
+                        }
+
+                        $("#table-container").html(response);
+                    }).fail(function (xhr) {
+
+                        toastr.error("Something went wrong");
+                    })
+                }
+            })
+        });
         $(".deleteBtn").click(function () {
             swal({
                 title: "Are you sure that you want to delete this data",
@@ -86,16 +147,15 @@
                         swal("Successfully Deleted", {
                             icon: "success"
                         });
-                   
+
                         $("#table-container").html(response);
                     }).fail(function (xhr) {
-                 
+
                         toastr.error("Something went wrong");
                     })
                 }
             })
         });
-
         $(".page-buttons").click(function () {
             $.ajax({
                 url: '@Url.Action("ToDoTable", "ToDo")',
@@ -104,7 +164,7 @@
                     searchValue: '@Model.Search'
                 }
             }).done(function (response) {
-           
+
                 $("#table-container").html(response);
             }).fail(function (xhr) {
 
@@ -112,5 +172,4 @@
             })
         })
     });
-
 </script>

@@ -15,9 +15,16 @@ namespace ToDoList.Data.DataAccess.Repository
         public UnitOfWork(ApplicationDbContext db)
         {
             _db = db;
-            ToDo = new ToDoRepository(db);        
+            ToDo = new ToDoRepository(db);
+            ApplicationUser = new ApplicationUserRepository(db);
+            User = new UserRepository(db);
         }
         public IToDoRepository ToDo { get; private set; }
+
+        public IApplicationUserRepository ApplicationUser { get; private set; }
+
+        public IUserRepository User { get; private set; }
+
         public void Dispose()
         {
             _db.Dispose();
