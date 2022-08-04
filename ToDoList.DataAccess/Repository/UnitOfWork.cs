@@ -18,12 +18,15 @@ namespace ToDoList.Data.DataAccess.Repository
             ToDo = new ToDoRepository(db);
             ApplicationUser = new ApplicationUserRepository(db);
             User = new UserRepository(db);
+            UserToDo=new UserToDoRepository(db);
         }
         public IToDoRepository ToDo { get; private set; }
 
         public IApplicationUserRepository ApplicationUser { get; private set; }
 
         public IUserRepository User { get; private set; }
+
+        public IUserToDoRepository UserToDo { get;private set; }
 
         public void Dispose()
         {

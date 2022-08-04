@@ -11,7 +11,7 @@ namespace ToDoList.DataAccess.IRepository
         public IToDoRepository ToDo { get; }
         public IApplicationUserRepository ApplicationUser { get; }
         public IUserRepository User { get; }
-       
+        public IUserToDoRepository UserToDo { get; }
         Task SaveAsync();
     }
 }

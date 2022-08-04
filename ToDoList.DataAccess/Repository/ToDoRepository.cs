@@ -43,7 +43,7 @@ namespace ToDoList.DataAccess.Repository
             if(toDoObj!=null)
             {
                 toDoObj.ToDoDetails = toDo.ToDoDetails;
-                toDoObj.Status = toDo.Status;                      
+                                    
             }
         }
     }

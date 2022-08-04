@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using System.Diagnostics;
+using System.Security.Claims;
 using ToDoList.DataAccess.IRepository;
 using ToDoList.Models.Models;
 using ToDoList.Models.ViewModels;
@@ -28,12 +29,23 @@ namespace ToDoList.Controllers
         }
         public async Task<IActionResult> ToDoTable(string searchValue, int pageNo, int pageSize)
         {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             pageNo = pageNo != 0 ? pageNo : 1;
             pageSize = 10;
             var numberOfToDo = await _unitOfWrok.ToDo.CountAsync(searchValue);
+            var todoList = await _unitOfWrok.ToDo.SearchAsync(searchValue, pageNo, pageSize);
+            foreach (var todo in todoList)
+            {
+                var result = await _unitOfWrok.UserToDo.
+                    FirstOrDefaultAsync(x => x.UserId == userId && x.ToDoId == todo.Id);
+                if(result!=null)
+                {
+                    todo.Status = true;
+                }
+            }
             ToDoVM toDoVM = new ToDoVM()
             {
-                ToDoList = await _unitOfWrok.ToDo.SearchAsync(searchValue, pageNo, pageSize),
+                ToDoList = todoList,
                 Search = searchValue,
                 Pager = new Pager(numberOfToDo, pageNo, pageSize)
             };
@@ -73,7 +85,7 @@ namespace ToDoList.Controllers
         public async Task<IActionResult> Upsert(ToDo toDo)
         {
             try
-            {
+            {             
                 if (ModelState.IsValid)
                 {
                     if (toDo.Id.Equals(Guid.Empty))
@@ -145,26 +157,28 @@ namespace ToDoList.Controllers
             {
                 if (!id.Equals(Guid.Empty))
                 {
-                    var toDo = await _unitOfWrok.ToDo.FirstOrDefaultAsync(x => x.Id == id);
+                    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                    var toDo = await _unitOfWrok.UserToDo.
+                        FirstOrDefaultAsync(x => x.ToDoId == id && x.UserId==userId);
                     if (toDo == null)
                     {
-                        return NotFound();
-                    }
-                    if (toDo.Status==false)
-                    {
-                        toDo.Status = true;
+                        UserToDo userToDo = new UserToDo();
+                        userToDo.UserId = userId;
+                        userToDo.ToDoId = id;
+                        await _unitOfWrok.UserToDo.AddAsync(userToDo);
                         await _unitOfWrok.SaveAsync();
                         await _signalHub.Clients.All.SendAsync("LoadToDo");
-                        return Json(new {success=true, message = "Successfully Done" });
+                        return Json(new { success = true, message = "Successfully Done" });
+
                     }
-                    else {
-                        toDo.Status = false;
+                    else
+                    {
+                        await _unitOfWrok.UserToDo.RemoveAsync(toDo);
                         await _unitOfWrok.SaveAsync();
                         await _signalHub.Clients.All.SendAsync("LoadToDo");
                         return Json(new { success = false, message = "Undo" });
-                    }
-                    
 
+                    }                 
                 }
                 else
                 {

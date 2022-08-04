@@ -61,10 +61,7 @@ namespace ToDoList.DataAccess.Initializer
             {
                 return;
             }
-           
-            
-            
-            
+         
         }
     }
 }

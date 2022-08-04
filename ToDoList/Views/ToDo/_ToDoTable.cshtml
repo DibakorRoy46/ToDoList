@@ -19,51 +19,44 @@
                 foreach (var toDo in Model.ToDoList)
                 {
                     i++;
-
-                            <tr>
-                                <td width="10">@(i)</td>
-                                <td width="40">
-                            @if (toDo.Status == true)
+                    <tr>
+                        <td width="10">@(i)</td>
+                        @if(toDo.Status==true)
+                        {
+                            <td width="40"><p class="text-primary">@toDo.ToDoDetails</p></td>
+                        }
+                        else
+                        {
+                             <td width="40"><p class="text-danger">@toDo.ToDoDetails</p></td>         
+                        }
+                        @if(toDo.Status==true)
+                        {
+                            <td width="40"><input checked type="checkbox" class="form-check-input"/></td>
+                        }
+                        else
+                        {
+                            <td width="40"><input  type="checkbox" class="form-check-input"/></td>       
+                        }
+                      
+                        <td width="40">
+                            <button class="btn btn-success doneBtn" data-id="@toDo.Id"><i class="fa fa-check"></i></button>
+                            @if (User.IsInRole("Admin"))
                             {
-                                            <p class="text-primary">@toDo.ToDoDetails</p>
+                               <a class="btn btn-primary" asp-action="Upsert" asp-route-id="@toDo.Id"><i class="fas fa-edit"></i></a>
+
+                                <button class="btn btn-danger deleteBtn" data-id="@toDo.Id"><i class="fas fa-trash-alt"></i></button>
                             }
-                            else
-                            {
-                                             <p class="text-danger">@toDo.ToDoDetails</p>
-                            }
-
-
-                                <td width="10">@if (toDo.Status == true)
-                                {
-                                            <input type="checkbox" checked disabled class="form-check-input">
-                                }
-                                else
-                                {
-                                            <input type="checkbox"  disabled class="form-check-input">
-                                }
-                                </td>
-
-                                <td width="40">
-                                    <button class="btn btn-success doneBtn" data-id="@toDo.Id"><i class="fa fa-check"></i></button>
-                                @if (User.IsInRole("Admin"))
-                                {
-
-
-                                            <a class="btn btn-primary" asp-action="Upsert" asp-route-id="@toDo.Id"><i class="fas fa-edit"></i></a>
-
-                                        <button class="btn btn-danger deleteBtn" data-id="@toDo.Id"><i class="fas fa-trash-alt"></i></button>
-                                }
-                                </td>
-                            </tr>
+                        </td>
+                     </tr>
                 }
             }
             else
             {
-                    <tr>
-                        <td></td>
-                        <td class="text-danger">No ToDo Available</td>
-                        <td></td>
-                    </tr>
+                <tr>
+                    <td></td>
+                     <td class="text-danger">No ToDo Available</td>
+                     <td></td>
+                </tr>
             }
         </tbody>
     </table>
@@ -74,18 +67,18 @@
     {
         @if (Model.Pager.CurrentPage > 1)
         {
-                    <button class="btn btn-outline-info page-buttons" data-pageNo="1">First</button>
-                    <button class="btn btn-outline-info page-buttons" data-pageNo="@(Model.Pager.CurrentPage-1)">Previous</button>
+                                                    <button class="btn btn-outline-info page-buttons" data-pageNo="1">First</button>
+                                                    <button class="btn btn-outline-info page-buttons" data-pageNo="@(Model.Pager.CurrentPage-1)">Previous</button>
         }
         for (int page = Model.Pager.StartPage; page <= Model.Pager.EndPage; page++)
         {
             string activeClass = Model.Pager.CurrentPage == page ? "active bg-info" : "";
-                    <button class="btn btn-outline-info page-buttons @activeClass" data-pageNo="@(page)">@(page)</button>
+                                                    <button class="btn btn-outline-info page-buttons @activeClass" data-pageNo="@(page)">@(page)</button>
         }
         if (Model.Pager.CurrentPage < Model.Pager.EndPage)
         {
-                    <button class="btn btn-outline-info page-buttons" data-pageNo="@(Model.Pager.CurrentPage+1)">Next</button>
-                    <button class="btn btn-outline-info page-buttons" data-pageNo="@(Model.Pager.EndPage)">Last</button>
+                                                    <button class="btn btn-outline-info page-buttons" data-pageNo="@(Model.Pager.CurrentPage+1)">Next</button>
+                                                    <button class="btn btn-outline-info page-buttons" data-pageNo="@(Model.Pager.EndPage)">Last</button>
         }
     }
 </div>
