@@ -23,7 +23,7 @@ namespace ToDoList.DataAccess.Initializer
             _userManager = userManager;
         }
 
-        public async void Initialize()
+        public void Initialize()
         {
             try
             {
@@ -41,24 +41,30 @@ namespace ToDoList.DataAccess.Initializer
             if (!_roleManager.RoleExistsAsync("Admin").GetAwaiter().GetResult())
             {
                 _roleManager.CreateAsync(new IdentityRole("Admin")).GetAwaiter().GetResult();
-                _roleManager.CreateAsync(new IdentityRole("Regular")).GetAwaiter().GetResult();     
+                _roleManager.CreateAsync(new IdentityRole("Regular")).GetAwaiter().GetResult();
+                _userManager.CreateAsync(new ApplicationUser
+                {
+                    UserName = "admin@gmail.com",
+                    Email = "admin@gmail.com",
+                    EmailConfirmed = true,
+                    Name = "Admin",
+                    PhoneNumber = "01234567892"
+                }, "Admin_123@").GetAwaiter().GetResult();
+
+                // ApplicationUser user =await _db.ApplicationUsers.FirstOrDefaultAsync(u => u.Email == "admin@gmail.com");
+                var user =  _db.ApplicationUsers.FirstOrDefault(x => x.Email == "admin@gmail.com");
+
+
+                _userManager.AddToRoleAsync(user, "Admin").GetAwaiter().GetResult();
             }
             else
             {
                 return;
             }
            
-            _userManager.CreateAsync(new ApplicationUser
-            {
-                UserName = "admin@gmail.com",
-                Email = "admin@gmail.com",
-                EmailConfirmed = true,
-                Name = "Admin",
-                PhoneNumber = "01234567892"
-            }, "Admin_123@").GetAwaiter().GetResult();
-
-            ApplicationUser user =await _db.ApplicationUsers.FirstOrDefaultAsync(u => u.Email == "admin@gmail.com");
-            _userManager.AddToRoleAsync(user,"Admin").GetAwaiter().GetResult();
+            
+            
+            
         }
     }
 }
